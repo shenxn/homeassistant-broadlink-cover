@@ -33,7 +33,7 @@ from homeassistant.const import (
     CONF_HOST, CONF_MAC)
 import homeassistant.helpers.config_validation as cv
 
-REQUIREMENTS = ['broadlink==0.5']
+REQUIREMENTS = ['broadlink==0.9.0']
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     mac_addr = binascii.unhexlify(
         config.get(CONF_MAC).encode().replace(b':', b''))
 
-    broadlink_device = broadlink.rm((ip_addr, 80), mac_addr)
+    broadlink_device = broadlink.rm((ip_addr, 80), mac_addr, None)
 
     covers = []
     for object_id, device_config in devices.items():

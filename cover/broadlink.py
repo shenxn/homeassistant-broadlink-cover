@@ -141,10 +141,14 @@ class BroadlinkRMCover(CoverDevice):
     def open_cover(self, **kwargs):
         """Open the cover."""
         self._sendpacket(self._command_open)
+        self._state = False
+        self.async_schedule_update_ha_state()
 
     def close_cover(self, **kwargs):
         """Close the cover."""
         self._sendpacket(self._command_close)
+        self._state = True
+        self.async_schedule_update_ha_state()
 
     def stop_cover(self, **kwargs):
         """Stop the cover."""

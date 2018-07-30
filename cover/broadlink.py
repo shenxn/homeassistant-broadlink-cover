@@ -25,7 +25,7 @@ import voluptuous as vol
 
 from homeassistant.util.dt import utcnow
 from homeassistant.util import Throttle
-from homeassistant.components.cover import (CoverDevice, PLATFORM_SCHEMA, SUPPORT_OPEN, SUPPORT_CLOSE, SUPPORT_STOP)
+from homeassistant.components.cover import (CoverDevice, PLATFORM_SCHEMA, SUPPORT_OPEN, SUPPORT_CLOSE, SUPPORT_STOP, ENTITY_ID_FORMAT)
 from homeassistant.const import (
     CONF_FRIENDLY_NAME, CONF_COMMAND_OPEN,
     CONF_COMMAND_CLOSE, CONF_COMMAND_STOP,
@@ -76,6 +76,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     for object_id, device_config in devices.items():
         covers.append(
             BroadlinkRMCover(
+                object_id,
                 device_config.get(CONF_FRIENDLY_NAME, object_id),
                 broadlink_device,
                 device_config.get(CONF_COMMAND_OPEN),
@@ -96,8 +97,9 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 class BroadlinkRMCover(CoverDevice):
     """Representation of an Broadlink cover."""
 
-    def __init__(self, friendly_name, device, command_open, command_close, command_stop):
+    def __init__(self, object_id, friendly_name, device, command_open, command_close, command_stop):
         """Initialize the cover."""
+        self.entity_id = ENTITY_ID_FORMAT.format(object_id)
         self._name = friendly_name
         self._state = False
         self._command_open = b64decode(command_open) if command_open else None
@@ -139,10 +141,14 @@ class BroadlinkRMCover(CoverDevice):
     def open_cover(self, **kwargs):
         """Open the cover."""
         self._sendpacket(self._command_open)
+        self._state = False
+        self.async_schedule_update_ha_state()
 
     def close_cover(self, **kwargs):
         """Close the cover."""
         self._sendpacket(self._command_close)
+        self._state = True
+        self.async_schedule_update_ha_state()
 
     def stop_cover(self, **kwargs):
         """Stop the cover."""
